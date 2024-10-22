@@ -21,6 +21,10 @@ using fluXis.Game.Graphics.Shaders.Mosaic;
 using fluXis.Game.Graphics.Shaders.Noise;
 using fluXis.Game.Graphics.Shaders.Retro;
 using fluXis.Game.Graphics.Shaders.Vignette;
+using fluXis.Game.Graphics.Shaders.ColorShift;
+using fluXis.Game.Graphics.Shaders.Pixelate;
+using fluXis.Game.Graphics.Shaders.Glitch;
+using fluXis.Game.Graphics.Shaders.Datamosh;
 using fluXis.Game.Input;
 using fluXis.Game.Map;
 using fluXis.Game.Map.Structures.Events;
@@ -252,6 +256,10 @@ public partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<FluXisGlo
                 ShaderType.Noise => new NoiseContainer(),
                 ShaderType.Vignette => new VignetteContainer(),
                 ShaderType.Retro => new RetroContainer(),
+                ShaderType.ColorShift => new ColorShiftContainer(),
+                ShaderType.Pixelate => new PixelateContainer(),
+                ShaderType.Glitch => new GlitchContainer(),
+                ShaderType.Datamosh => new DatamoshContainer(),
                 _ => null
             };
 

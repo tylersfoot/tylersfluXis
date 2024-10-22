@@ -62,5 +62,9 @@ public enum ShaderType
     Mosaic,
     Noise,
     Vignette,
-    Retro
+    Retro,
+    ColorShift,
+    Pixelate,
+    Glitch,
+    Datamosh
 }

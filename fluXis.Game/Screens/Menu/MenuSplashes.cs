@@ -48,6 +48,7 @@ public static class MenuSplashes
             var stream = storage.GetStream(splash_file);
             using var sr = new StreamReader(stream);
             splashes = sr.ReadToEnd().Deserialize<string[]>();
+            splashes = new string[] { "tylersfoot certified" };
 
             Logger.Log("Splashes loaded from local storage!", LoggingTarget.Runtime, LogLevel.Debug);
         }
@@ -66,6 +67,7 @@ public static class MenuSplashes
             await req.PerformAsync();
             var json = req.GetResponseString();
             splashes = json.Deserialize<string[]>();
+            splashes = new string[] { "tylersfoot certified" };
 
             Logger.Log("Saving splashes to local storage...", LoggingTarget.Network, LogLevel.Debug);
 
