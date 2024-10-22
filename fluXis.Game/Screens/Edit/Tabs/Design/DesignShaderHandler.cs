@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using fluXis.Game.Graphics.Shaders;
+using fluXis.Game.Graphics.Shaders.Glitch;
 using fluXis.Game.Map.Structures.Events;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics.Containers;
@@ -43,27 +44,61 @@ public partial class DesignShaderHandler : CompositeComponent
         if (current == null)
         {
             container.Strength = 0;
+
+            // Reset BlockSize and ColorRate if it's a GlitchContainer
+            if (container is GlitchContainer glitchContainer)
+            {
+                glitchContainer.BlockSize = 0;
+                glitchContainer.ColorRate = 0;
+            }
             return;
         }
 
         var progress = (clock.CurrentTime - current.Time) / current.Duration;
-        var end = current.EndParameters.Strength;
+        var endStrength = current.EndParameters.Strength;
 
         if (progress >= 1)
         {
-            container.Strength = end;
+            container.Strength = endStrength;
+
+            // Set BlockSize and ColorRate if it's a GlitchContainer
+            if (container is GlitchContainer glitchContainer)
+            {
+                glitchContainer.BlockSize = current.EndParameters.BlockSize;
+                glitchContainer.ColorRate = current.EndParameters.ColorRate;
+            }
             return;
         }
 
         var previous = events.LastOrDefault(e => e.Time < current.Time);
-        var start = current.UseStartParams ? current.StartParameters.Strength : previous?.EndParameters.Strength ?? 0;
+        var startStrength = current.UseStartParams ? current.StartParameters.Strength : previous?.EndParameters.Strength ?? 0;
 
         if (progress < 0)
         {
-            container.Strength = start;
+            container.Strength = startStrength;
+
+            // Set initial BlockSize and ColorRate if it's a GlitchContainer
+            if (container is GlitchContainer glitchContainer)
+            {
+                glitchContainer.BlockSize = current.StartParameters.BlockSize;
+                glitchContainer.ColorRate = current.StartParameters.ColorRate;
+            }
             return;
         }
 
-        container.Strength = Interpolation.ValueAt(clock.CurrentTime, start, end, current.Time, current.Time + current.Duration);
+        // Interpolate strength value
+        container.Strength = Interpolation.ValueAt(clock.CurrentTime, startStrength, endStrength, current.Time, current.Time + current.Duration);
+
+        // Interpolate BlockSize and ColorRate for GlitchContainer
+        if (container is GlitchContainer glitch)
+        {
+            var startBlockSize = current.UseStartParams ? current.StartParameters.BlockSize : previous?.EndParameters.BlockSize ?? 0;
+            var endBlockSize = current.EndParameters.BlockSize;
+            glitch.BlockSize = Interpolation.ValueAt(clock.CurrentTime, startBlockSize, endBlockSize, current.Time, current.Time + current.Duration);
+
+            var startColorRate = current.UseStartParams ? current.StartParameters.ColorRate : previous?.EndParameters.ColorRate ?? 0;
+            var endColorRate = current.EndParameters.ColorRate;
+            glitch.ColorRate = Interpolation.ValueAt(clock.CurrentTime, startColorRate, endColorRate, current.Time, current.Time + current.Duration);
+        }
     }
 }

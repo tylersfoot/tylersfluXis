@@ -504,8 +504,10 @@ public partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<FluXisGlo
             var score = ScoreProcessor.ToScoreInfo();
             score.ScrollSpeed = Config.Get<float>(FluXisSetting.ScrollSpeed);
 
-            var screen = new SoloResults(RealmMap, score, CurrentPlayer);
-            screen.OnRestart = OnRestart;
+            var screen = new SoloResults(RealmMap, score, CurrentPlayer)
+            {
+                OnRestart = OnRestart
+            };
             if (bestScore != null) screen.ComparisonScore = bestScore.ToScoreInfo();
 
             if (Mods.All(m => m.SaveScore) && SubmitScore && !RealmMap.MapSet.AutoImported)

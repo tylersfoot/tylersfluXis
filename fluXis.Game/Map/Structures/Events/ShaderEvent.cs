@@ -50,6 +50,10 @@ public class ShaderEvent : IMapEvent, IHasDuration, IHasEasing
     {
         [JsonProperty("strength")]
         public float Strength { get; set; }
+        [JsonProperty("block-size")]
+        public float BlockSize { get; set; }
+        [JsonProperty("color-rate")]
+        public float ColorRate { get; set; }
     }
 }
 

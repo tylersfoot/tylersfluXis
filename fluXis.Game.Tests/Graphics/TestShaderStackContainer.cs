@@ -8,10 +8,6 @@ using fluXis.Game.Graphics.Shaders.Mosaic;
 using fluXis.Game.Graphics.Shaders.Noise;
 using fluXis.Game.Graphics.Shaders.Retro;
 using fluXis.Game.Graphics.Shaders.Vignette;
-using fluXis.Game.Graphics.Shaders.ColorShift;
-using fluXis.Game.Graphics.Shaders.Pixelate;
-using fluXis.Game.Graphics.Shaders.Glitch;
-using fluXis.Game.Graphics.Shaders.Datamosh;
 using fluXis.Game.Map;
 using fluXis.Game.Mods;
 using fluXis.Game.Replays;
@@ -70,22 +66,7 @@ public partial class TestShaderStackContainer : FluXisTestScene
         var retro = new RetroContainer { RelativeSizeAxes = Axes.Both };
         stack.AddShader(retro);
         AddSliderStep("Retro Strength", 0, 1f, 0f, strength => retro.Strength = strength);
-        
-        var colorShift = new ColorShiftContainer { RelativeSizeAxes = Axes.Both, Strength = 0 };
-        stack.AddShader(colorShift);
-        AddSliderStep("Color Shift Strength", 0, 1f, 0f, strength => colorShift.Strength = strength);
 
-        var pixelate = new PixelateContainer { RelativeSizeAxes = Axes.Both, Strength = 0 };
-        stack.AddShader(pixelate);
-        AddSliderStep("Pixelate Strength", 0, 1f, 0f, strength => pixelate.Strength = strength);
-
-        var glitch = new GlitchContainer { RelativeSizeAxes = Axes.Both, Strength = 0 };
-        stack.AddShader(glitch);
-        AddSliderStep("Glitch Strength", 0, 1f, 0f, strength => glitch.Strength = strength);
-
-        var datamosh = new DatamoshContainer { RelativeSizeAxes = Axes.Both, Strength = 0 };
-        stack.AddShader(datamosh);
-        AddSliderStep("Datamosh Strength", 0, 1f, 0f, strength => datamosh.Strength = strength);
 
         stack.AddContent(new Drawable[]
         {

@@ -13,7 +13,9 @@ public partial class GlitchContainer
     private class GlitchContainerDrawNode : ShaderDrawNode<GlitchContainer>
     {
         private float strength;
-        private IUniformBuffer<GlitchParameters> glitchParametersBuffer;
+        private float blockSize;
+        private float colorRate;
+        private IUniformBuffer<GlitchParameters> parametersBuffer;
 
         public GlitchContainerDrawNode(GlitchContainer source, BufferedDrawNodeSharedData sharedData)
             : base(source, sharedData)
@@ -24,7 +26,9 @@ public partial class GlitchContainer
         {
             base.ApplyState();
 
-            strength = Source.Strength;
+            strength = Source.Strength / 10f;
+            blockSize = Source.BlockSize;
+            colorRate = Source.ColorRate / 20f;
         }
 
         protected override void PopulateContents(IRenderer renderer)
@@ -32,12 +36,12 @@ public partial class GlitchContainer
             base.PopulateContents(renderer);
 
             if (strength > 0)
-                drawFrameBuffer(renderer, strength);
+                drawFrameBuffer(renderer, strength, blockSize, colorRate);
         }
 
-        private void drawFrameBuffer(IRenderer renderer, float strength)
+        private void drawFrameBuffer(IRenderer renderer, float strength, float blockSize, float colorRate)
         {
-            glitchParametersBuffer ??= renderer.CreateUniformBuffer<GlitchParameters>();
+            parametersBuffer ??= renderer.CreateUniformBuffer<GlitchParameters>();
 
             IFrameBuffer current = SharedData.CurrentEffectBuffer;
             IFrameBuffer target = SharedData.GetNextEffectBuffer();
@@ -46,13 +50,16 @@ public partial class GlitchContainer
 
             using (BindFrameBuffer(target))
             {
-                glitchParametersBuffer.Data = glitchParametersBuffer.Data with
+                parametersBuffer.Data = new GlitchParameters
                 {
                     TexSize = current.Size,
-                    Strength = strength
+                    Strength = strength,
+                    Time = (float)Source.Time.Current % 10000f,
+                    BlockSize = blockSize,
+                    ColorRate = colorRate
                 };
 
-                Shader.BindUniformBlock("m_GlitchParameters", glitchParametersBuffer);
+                Shader.BindUniformBlock("m_GlitchParameters", parametersBuffer);
                 Shader.Bind();
                 renderer.DrawFrameBuffer(current, new RectangleF(0, 0, current.Texture.Width, current.Texture.Height), ColourInfo.SingleColour(Color4.White));
                 Shader.Unbind();
@@ -62,16 +69,18 @@ public partial class GlitchContainer
         protected override void Dispose(bool isDisposing)
         {
             base.Dispose(isDisposing);
-            glitchParametersBuffer?.Dispose();
+            parametersBuffer?.Dispose();
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         private record struct GlitchParameters
         {
-            public UniformVector2 TexSize;
-            public UniformFloat Strength;
-            private readonly UniformPadding8 pad1;
-            private readonly UniformPadding12 pad2;
+            public UniformVector2 TexSize; // Texture size
+            public UniformFloat Strength; // Vibration strength
+            public UniformFloat Time; // Time value
+            public UniformFloat BlockSize; // Vibration block size
+            public UniformFloat ColorRate; // Color separation rate (0.0 to 1.0)
+            private readonly UniformPadding8 padding; // Add this to align to 32 bytes
         }
     }
 }
