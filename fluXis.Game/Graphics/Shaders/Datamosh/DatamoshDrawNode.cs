@@ -36,42 +36,6 @@ public partial class DatamoshContainer
                 drawFrameBuffer(renderer, strength);
         }
 
-        // private void drawFrameBuffer(IRenderer renderer, float strength)
-        // {
-        //     parametersBuffer ??= renderer.CreateUniformBuffer<DatamoshParameters>();
-
-        //     previous = SharedData.CurrentEffectBuffer;
-        //     IFrameBuffer current = SharedData.GetNextEffectBuffer();
-
-        //     Texture mergedTexture = renderer.CreateTexture(current.Texture.Width * 2, current.Texture.Height, false, TextureFilteringMode.Linear);
-            
-        //     renderer.SetBlend(BlendingParameters.None);
-        //     using (BindFrameBuffer(current))
-        //     {
-        //         renderer.DrawFrameBuffer(current, new RectangleF(0, 0, current.Texture.Width, current.Texture.Height), ColourInfo.SingleColour(Color4.White));
-        //         renderer.DrawFrameBuffer(previous, new RectangleF(current.Texture.Width, 0, current.Texture.Width, current.Texture.Height), ColourInfo.SingleColour(Color4.White));
-        //     }
-
-        //     mergedTexture = current.Texture;
-        //     current = SharedData.CurrentEffectBuffer;
-        //     IFrameBuffer target = SharedData.GetNextEffectBuffer();
-
-        //     renderer.SetBlend(BlendingParameters.None);
-        //     using (BindFrameBuffer(target))
-        //     {
-        //         parametersBuffer.Data = parametersBuffer.Data with
-        //         {
-        //             TexSize = current.Size,
-        //             Strength = strength
-        //         };
-
-        //         Shader.BindUniformBlock("m_DatamoshParameters", parametersBuffer);
-        //         Shader.Bind();
-        //         renderer.DrawFrameBuffer(current, new RectangleF(0, 0, current.Texture.Width, current.Texture.Height), ColourInfo.SingleColour(Color4.White));
-        //         Shader.Unbind();
-        //     }
-        // }
-
         private void drawFrameBuffer(IRenderer renderer, float strength)
         {
             parametersBuffer ??= renderer.CreateUniformBuffer<DatamoshParameters>();

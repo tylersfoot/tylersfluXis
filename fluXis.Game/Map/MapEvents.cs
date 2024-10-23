@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using fluXis.Game.Graphics.Shaders;
 using fluXis.Game.Map.Structures.Bases;
 using fluXis.Game.Map.Structures.Events;
 using fluXis.Shared.Utils;
@@ -198,7 +199,6 @@ public class MapEvents : IDeepCloneable<MapEvents>
                         Alpha = float.Parse(args[2], CultureInfo.InvariantCulture)
                     });
                     break;
-
                 case "Shader":
                     if (args.Length < 3)
                         continue;
@@ -210,15 +210,58 @@ public class MapEvents : IDeepCloneable<MapEvents>
                         continue;
 
                     var dataJson = line[startIdx..(endIdx + 1)];
-                    var data = dataJson.Deserialize<ShaderEvent.ShaderParameters>();
 
-                    ShaderEvents.Add(new ShaderEvent
+                    // Get the shader name (args[1]) and fetch its settings
+                    var shaderName = args[1];
+                    if (!ShaderSettings.Shaders.TryGetValue(shaderName, out _))
+                        continue; // if no matching shader, skip
+
+                    // Parse the legacy dataJson into a Dictionary
+                    var parsedData = JsonConvert.DeserializeObject<Dictionary<string, float>>(dataJson);
+
+                    // Create a new ShaderEvent and populate its EndParameters dynamically
+                    var shaderEvent = new ShaderEvent
                     {
                         Time = float.Parse(args[0], CultureInfo.InvariantCulture),
-                        ShaderName = args[1],
-                        EndParameters = data
-                    });
+                        ShaderName = shaderName
+                    };
+
+                    // Initialize the parameters based on the shader settings
+                    shaderEvent.InitializeParameters();
+
+                    foreach (var kvp in parsedData)
+                    {
+                        if (shaderEvent.EndParameters.ContainsKey(kvp.Key) && shaderEvent.EndParameters[kvp.Key] is SliderParameter slider)
+                        {
+                            // Assign the parsed float value to the corresponding parameter
+                            slider.Value = kvp.Value;
+                        }
+                    }
+
+                    ShaderEvents.Add(shaderEvent);
                     break;
+
+                // previous code
+                // case "Shader":
+                //     if (args.Length < 3)
+                //         continue;
+
+                //     var startIdx = line.IndexOf('{');
+                //     var endIdx = line.LastIndexOf('}');
+
+                //     if (startIdx == -1 || endIdx == -1)
+                //         continue;
+
+                //     var dataJson = line[startIdx..(endIdx + 1)];
+                //     var data = dataJson.Deserialize<ShaderEvent.ShaderParameters>();
+
+                //     ShaderEvents.Add(new ShaderEvent
+                //     {
+                //         Time = float.Parse(args[0], CultureInfo.InvariantCulture),
+                //         ShaderName = args[1],
+                //         EndParameters = data
+                //     });
+                //     break;
             }
         }
 

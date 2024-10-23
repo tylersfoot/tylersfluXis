@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using fluXis.Game.Graphics.Shaders;
 using fluXis.Game.Map.Structures.Bases;
 using Newtonsoft.Json;
 using osu.Framework.Graphics;
@@ -36,26 +38,70 @@ public class ShaderEvent : IMapEvent, IHasDuration, IHasEasing
     [JsonProperty("use-start")]
     public bool UseStartParams { get; set; }
 
+    // store dynamic parameters as a dictionary, instead of hardcoding fields
     [JsonProperty("start-params")]
-    public ShaderParameters StartParameters { get; set; } = new();
+    public Dictionary<string, ShaderParameter> StartParameters { get; set; } = new();
 
     [JsonProperty("end-params")]
-    public ShaderParameters EndParameters { get; set; } = new();
+    public Dictionary<string, ShaderParameter> EndParameters { get; set; } = new();
 
-    [JsonProperty("params")]
-    [Obsolete($"Use {nameof(EndParameters)} instead.")]
-    public ShaderParameters Parameters { set => EndParameters = value; }
-
-    public class ShaderParameters
+    // initialize parameters by copying ShaderSettings
+    public void InitializeParameters()
     {
-        [JsonProperty("strength")]
-        public float Strength { get; set; }
-        [JsonProperty("block-size")]
-        public float BlockSize { get; set; }
-        [JsonProperty("color-rate")]
-        public float ColorRate { get; set; }
+        var shaderInfo = ShaderSettings.Shaders[ShaderName];
+
+        foreach (var param in shaderInfo.Parameters)
+        {
+            // deep copy start parameters
+            StartParameters[param.Key] = param.Value.Clone();
+
+            // only add sliders to the end parameters
+            if (param.Value is SliderParameter)
+            {
+                EndParameters[param.Key] = param.Value.Clone();
+            }
+        }
+    }
+
+    // set specific start slider parameter
+    public void SetStartParameter(string paramName, float value)
+    {
+        if (StartParameters.ContainsKey(paramName) && StartParameters[paramName] is SliderParameter slider)
+        {
+            slider.Value = value;
+        }
+    }
+
+    // set specific end slider parameter
+    public void SetEndParameter(string paramName, float value)
+    {
+        if (EndParameters.ContainsKey(paramName) && EndParameters[paramName] is SliderParameter slider)
+        {
+            slider.Value = value;
+        }
+    }
+
+    // get start slider parameter value
+    public float GetStartParameter(string paramName)
+    {
+        if (StartParameters.ContainsKey(paramName) && StartParameters[paramName] is SliderParameter slider)
+        {
+            return slider.Value;
+        }
+        return 0f; // default fallback
+    }
+
+    // get end slider parameter value
+    public float GetEndParameter(string paramName)
+    {
+        if (EndParameters.ContainsKey(paramName) && EndParameters[paramName] is SliderParameter slider)
+        {
+            return slider.Value;
+        }
+        return 0f; // default fallback
     }
 }
+
 
 public enum ShaderType
 {

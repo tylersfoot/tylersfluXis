@@ -6,7 +6,6 @@ using fluXis.Game.Graphics.Shaders.Glitch;
 using fluXis.Game.Map.Structures.Events;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
-using osu.Framework.Logging;
 
 namespace fluXis.Game.Screens.Gameplay;
 
@@ -33,86 +32,43 @@ public partial class ShaderEventHandler : EventHandler<ShaderEvent>
         }
     }
 
-    // private void trigger(ShaderEvent ev)
-    // {
-    //     var handler = InternalChildren.OfType<TransformHandler>().FirstOrDefault(x => x.Type == ev.Type) ?? throw new Exception($"Handler with type {ev.ShaderName} is not in scene tree!");
-    //     if (ev.UseStartParams)
-    //         handler.StrengthTo(ev.StartParameters.Strength);
-
-    //     handler.StrengthTo(ev.EndParameters.Strength, ev.Duration, ev.Easing);
-    // }
-
     private void trigger(ShaderEvent ev)
     {
         var handler = InternalChildren.OfType<TransformHandler>().FirstOrDefault(x => x.Type == ev.Type) ?? throw new Exception($"Handler with type {ev.ShaderName} is not in scene tree!");
 
+        // handle Start Parameters if they exist and UseStartParams is true
         if (ev.UseStartParams)
         {
-            handler.StrengthTo(ev.StartParameters.Strength);
-            handler.BlockSizeTo(ev.StartParameters.BlockSize);
-            handler.ColorRateTo(ev.StartParameters.ColorRate);
+            foreach (var param in ev.StartParameters)
+            {
+                switch (param.Value)
+                {
+                    case SliderParameter slider:
+                        handler.SetParameterTo(param.Key, slider.Value);
+                        break;
+                    case CheckboxParameter checkbox:
+                        handler.SetParameterTo(param.Key, checkbox.Value ? 1f : 0f); // Boolean represented as 1 or 0 for simplicity
+                        break;
+                }
+            }
         }
 
-        handler.StrengthTo(ev.EndParameters.Strength, ev.Duration, ev.Easing);
-        handler.BlockSizeTo(ev.EndParameters.BlockSize, ev.Duration, ev.Easing);
-        handler.ColorRateTo(ev.EndParameters.ColorRate, ev.Duration, ev.Easing);
+        // handle End Parameters
+        foreach (var param in ev.EndParameters)
+        {
+            if (param.Value is SliderParameter slider)
+            {
+                handler.SetParameterTo(param.Key, slider.Value, ev.Duration, ev.Easing);
+            }
+        }
     }
 
-
-    // the shader stack is outside the gameplay clock.
-    // we use this to keep up with rate changes and seeking
-    // private partial class TransformHandler : Drawable
-    // {
-    //     private ShaderContainer container { get; }
-    //     public ShaderType Type { get; }
-
-    //     private float strength
-    //     {
-    //         get => container.Strength;
-    //         set => container.Strength = value;
-    //     }
-
-    //     public TransformHandler(ShaderContainer container)
-    //     {
-    //         this.container = container;
-    //         Type = container.Type;
-    //     }
-
-    //     public void StrengthTo(float str, double dur = 0, Easing ease = Easing.None)
-    //         => this.TransformTo(nameof(strength), str, dur, ease);
-    // }
-
+    // The shader stack is outside the gameplay clock.
+    // We use this to keep up with rate changes and seeking
     private partial class TransformHandler : Drawable
     {
         private ShaderContainer container { get; }
         public ShaderType Type { get; }
-
-        private float strength
-        {
-            get => container.Strength;
-            set => container.Strength = value;
-        }
-
-        private float blockSize
-        {
-            get => (container as GlitchContainer)?.BlockSize ?? 0;
-            set
-            {
-                if (container is GlitchContainer glitchContainer)
-                    glitchContainer.BlockSize = value;
-            }
-        }
-
-
-        private float colorRate
-        {
-            get => (container as GlitchContainer)?.ColorRate ?? 0;
-            set
-            {
-                if (container is GlitchContainer glitchContainer)
-                    glitchContainer.ColorRate = value;
-            }
-        }
 
         public TransformHandler(ShaderContainer container)
         {
@@ -120,14 +76,23 @@ public partial class ShaderEventHandler : EventHandler<ShaderEvent>
             Type = container.Type;
         }
 
-        public void StrengthTo(float str, double dur = 0, Easing ease = Easing.None)
-            => this.TransformTo(nameof(strength), str, dur, ease);
+        // set parameter values dynamically using reflection
+        public void SetParameterTo(string paramName, float value, double dur = 0, Easing ease = Easing.None)
+        {
+            var property = container.GetType().GetProperty(paramName);
 
-        public void BlockSizeTo(float size, double dur = 0, Easing ease = Easing.None)
-            => this.TransformTo(nameof(blockSize), size, dur, ease);
-
-        public void ColorRateTo(float rate, double dur = 0, Easing ease = Easing.None)
-            => this.TransformTo(nameof(colorRate), rate, dur, ease);
+            if (property != null && property.PropertyType == typeof(float))
+            {
+                //  set the parameter directly if no duration, otherwise, animate the transition
+                if (dur == 0)
+                {
+                    property.SetValue(container, value);
+                }
+                else
+                {
+                    this.TransformTo(paramName, value, dur, ease);
+                }
+            }
+        }
     }
-
 }

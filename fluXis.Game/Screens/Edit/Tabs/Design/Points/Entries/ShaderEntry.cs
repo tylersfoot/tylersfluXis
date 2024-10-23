@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using fluXis.Game.Graphics.Shaders;
 using fluXis.Game.Graphics.Sprites;
 using fluXis.Game.Graphics.UserInterface.Color;
 using fluXis.Game.Map.Structures.Bases;
@@ -20,67 +21,68 @@ public partial class ShaderEntry : PointListEntry
 
     private ShaderEvent shader => Object as ShaderEvent;
 
-    private float maxStrength
-    {
-        get
-        {
-            if (shader.Type == ShaderType.Chromatic)
-                return 20f;
+    // private float maxStrength
+    // {
+    //     get
+    //     {
+    //         if (shader.Type == ShaderType.Chromatic)
+    //             return 20f;
 
-            return 1f;
-        }
-    }
+    //         return 1f;
+    //     }
+    // }
 
-    private float maxBlockSize = 1f;
-    private float maxColorRate = 1f;
+    // private float maxBlockSize = 1f;
+    // private float maxColorRate = 1f;
 
-    private float step
-    {
-        get
-        {
-            if (shader.Type == ShaderType.Chromatic)
-                return 1f;
+    // private float step
+    // {
+    //     get
+    //     {
+    //         if (shader.Type == ShaderType.Chromatic)
+    //             return 1f;
 
-            return .01f;
-        }
-    }
+    //         return .01f;
+    //     }
+    // }
 
-    public ShaderEntry(ShaderEvent obj)
-        : base(obj)
+    public ShaderEntry(ShaderEvent obj) : base(obj)
     {
     }
 
     public override ITimedObject CreateClone()
     {
-        return new ShaderEvent
+        var clone = new ShaderEvent
         {
             Time = Object.Time,
             Duration = shader.Duration,
             Type = shader.Type,
-            UseStartParams = shader.UseStartParams,
-            StartParameters = new ShaderEvent.ShaderParameters
-            {
-                Strength = shader.StartParameters.Strength,
-                BlockSize = shader.StartParameters.BlockSize,
-                ColorRate = shader.StartParameters.ColorRate
-            },
-            EndParameters = new ShaderEvent.ShaderParameters
-            {
-                Strength = shader.EndParameters.Strength,
-                BlockSize = shader.EndParameters.BlockSize,
-                ColorRate = shader.EndParameters.ColorRate
-            }
+            UseStartParams = shader.UseStartParams
         };
+
+        // clone Start and End parameters
+        foreach (var param in shader.StartParameters)
+        {
+            clone.StartParameters[param.Key] = param.Value.Clone();
+        }
+
+        foreach (var param in shader.EndParameters)
+        {
+            clone.EndParameters[param.Key] = param.Value.Clone();
+        }
+
+        return clone;
     }
 
     protected override Drawable[] CreateValueContent()
     {
         var text = $"{shader.ShaderName} {(int)shader.Duration}ms (";
 
-        if (shader.UseStartParams)
-            text += $"{shader.StartParameters.Strength} > ";
+        // not sure how to do this esp. with mult. parameters
+        // if (shader.UseStartParams)
+        //     text += $"{shader.StartParameters.Strength} > ";
 
-        text += $"{shader.EndParameters.Strength})";
+        // text += $"{shader.EndParameters.Strength})";
 
         return new Drawable[]
         {
@@ -121,113 +123,72 @@ public partial class ShaderEntry : PointListEntry
                     Map.Update(shader);
                 }
             },
-
-            startValToggle,
-
-            new PointSettingsSlider<float>
-            {
-                Enabled = startValToggle.Bindable,
-                Text = "Start Strength",
-                TooltipText = "The strength of the shader effect.",
-                CurrentValue = shader.StartParameters.Strength,
-                Min = 0,
-                Max = maxStrength,
-                Step = step,
-                OnValueChanged = value =>
-                {
-                    shader.StartParameters.Strength = value;
-                    Map.Update(shader);
-                }
-            },
-
-            new PointSettingsSlider<float>
-            {
-                Text = "End Strength",
-                TooltipText = "The strength of the shader effect.",
-                CurrentValue = shader.EndParameters.Strength,
-                Min = 0,
-                Max = maxStrength,
-                Step = step,
-                OnValueChanged = value =>
-                {
-                    shader.EndParameters.Strength = value;
-                    Map.Update(shader);
-                }
-            }
+            startValToggle
         };
 
-        // Check if the shader is of type Glitch before adding the block size and color rate sliders
-        if (shader.Type == ShaderType.Glitch)
+        // dynamically generate UI elements based on the shader's parameters
+        foreach (var param in shader.StartParameters)
         {
-            settings.AddRange(new Drawable[]
+            var startParameter = param.Value;
+
+            switch (startParameter.Type)
             {
-                new PointSettingsSlider<float>
-                {
-                    Enabled = startValToggle.Bindable,
-                    Text = "Start Block Size",
-                    TooltipText = "The block size of the shader effect.",
-                    CurrentValue = shader.StartParameters.BlockSize,
-                    Min = 0,
-                    Max = maxBlockSize,
-                    Step = step,
-                    OnValueChanged = value =>
-                    {
-                        shader.StartParameters.BlockSize = value;
-                        Map.Update(shader);
-                    }
-                },
+                case ShaderParameterType.Slider:
+                    var startSlider = startParameter as SliderParameter;
+                    var endSlider = shader.EndParameters[param.Key] as SliderParameter;
 
-                new PointSettingsSlider<float>
-                {
-                    Text = "End Block Size",
-                    TooltipText = "The block size of the shader effect.",
-                    CurrentValue = shader.EndParameters.BlockSize,
-                    Min = 0,
-                    Max = maxBlockSize,
-                    Step = step,
-                    OnValueChanged = value =>
+                    settings.Add(new PointSettingsSlider<float>
                     {
-                        shader.EndParameters.BlockSize = value;
-                        Map.Update(shader);
-                    }
-                },
+                        Enabled = startValToggle.Bindable,
+                        Text = $"Start {startSlider.Name}",
+                        TooltipText = startSlider.Tooltip,
+                        CurrentValue = startSlider.Value,
+                        Min = startSlider.SliderMin,
+                        Max = startSlider.SliderMax,
+                        Step = startSlider.SliderStep,
+                        OnValueChanged = value =>
+                        {
+                            startSlider.Value = value;
+                            Map.Update(shader);
+                        }
+                    });
 
-                new PointSettingsSlider<float>
-                {
-                    Enabled = startValToggle.Bindable,
-                    Text = "Start Color Rate",
-                    TooltipText = "The color rate of the shader effect.",
-                    CurrentValue = shader.StartParameters.ColorRate,
-                    Min = 0,
-                    Max = maxColorRate,
-                    Step = step,
-                    OnValueChanged = value =>
+                    settings.Add(new PointSettingsSlider<float>
                     {
-                        shader.StartParameters.ColorRate = value;
-                        Map.Update(shader);
-                    }
-                },
+                        Text = $"End {endSlider.Name}",
+                        TooltipText = endSlider.Tooltip,
+                        CurrentValue = endSlider.Value,
+                        Min = endSlider.SliderMin,
+                        Max = endSlider.SliderMax,
+                        Step = endSlider.SliderStep,
+                        OnValueChanged = value =>
+                        {
+                            endSlider.Value = value;
+                            Map.Update(shader);
+                        }
+                    });
+                    break;
 
-                new PointSettingsSlider<float>
-                {
-                    Text = "End Color Rate",
-                    TooltipText = "The color rate of the shader effect.",
-                    CurrentValue = shader.EndParameters.ColorRate,
-                    Min = 0,
-                    Max = maxColorRate,
-                    Step = step,
-                    OnValueChanged = value =>
+                case ShaderParameterType.Checkbox:
+                    var checkbox = startParameter as CheckboxParameter;
+
+                    settings.Add(new PointSettingsToggle
                     {
-                        shader.EndParameters.ColorRate = value;
-                        Map.Update(shader);
-                    }
-                }
-            });
+                        Text = $"{checkbox.Name}",
+                        TooltipText = checkbox.Tooltip,
+                        Bindable = new Bindable<bool>(checkbox.Value),
+                        OnStateChanged = value =>
+                        {
+                            checkbox.Value = value;
+                            Map.Update(shader);
+                        }
+                    });
+                    break;
+            }
         }
 
         settings.Add(new PointSettingsEasing<ShaderEvent>(Map, shader));
 
         return base.CreateSettings().Concat(settings);
     }
-
 }
