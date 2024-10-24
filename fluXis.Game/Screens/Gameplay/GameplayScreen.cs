@@ -235,6 +235,7 @@ public partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<FluXisGlo
         foreach (var shaderName in shaderTypes)
         {
             ShaderContainer shader = ShaderSettings.CreateShaderContainer(shaderName);
+            Logger.Log($"TYLER Shader '{shaderName}' found", LoggingTarget.Runtime, LogLevel.Debug);
 
             if (shader == null)
             {

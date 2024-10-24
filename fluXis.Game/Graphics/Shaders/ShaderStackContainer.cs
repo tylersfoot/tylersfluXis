@@ -22,7 +22,6 @@ public partial class ShaderStackContainer : CompositeDrawable
     public void AddShader(ShaderContainer shader)
     {
         Logger.Log($"Adding shader {shader.GetType().Name} to stack", LoggingTarget.Runtime, LogLevel.Debug);
-        Logger.Log($"{shaders.Count}", LoggingTarget.Runtime, LogLevel.Debug);
 
         if (shaders.Count == 0)
             InternalChild = shader;
@@ -30,6 +29,7 @@ public partial class ShaderStackContainer : CompositeDrawable
             shaders.Last().Add(shader);
 
         shaders.Add(shader);
+        Logger.Log($"{shaders.Count} shaders now in stack", LoggingTarget.Runtime, LogLevel.Debug);
     }
 
     public ShaderStackContainer AddContent(Drawable[] content)

@@ -119,7 +119,7 @@ public class MapEvents : IDeepCloneable<MapEvents>
                     {
                         if (shaderEventObject["start-params"] is JObject startParamsObject && shaderEventObject["end-params"] is JObject endParamsObject)
                         {
-                            Logger.Log($"TYLER Shader level 2: {startParamsObject} {endParamsObject}");
+                            // Logger.Log($"TYLER Shader level 2: {startParamsObject} {endParamsObject}");
                             var convertedStartParams = new JObject();
                             var convertedEndParams = new JObject();
 
@@ -137,7 +137,7 @@ public class MapEvents : IDeepCloneable<MapEvents>
                                 float? startValue = startParamsObject.ContainsKey(jsonKey) ? startParamsObject[jsonKey].Value<float>() : null;
                                 float? endValue = endParamsObject.ContainsKey(jsonKey) ? endParamsObject[jsonKey].Value<float>() : null;
 
-                                Logger.Log($"TYLER Shader level 3: {startValue} {endValue}");
+                                // Logger.Log($"TYLER Shader level 3: {startValue} {endValue}");
 
                                 // If both start and end values are found, proceed
                                 if (startValue.HasValue && endValue.HasValue)
@@ -168,7 +168,7 @@ public class MapEvents : IDeepCloneable<MapEvents>
                                         // Add to converted params
                                         convertedStartParams[shaderParamKey] = JObject.FromObject(newStartParam);
                                         convertedEndParams[shaderParamKey] = JObject.FromObject(newEndParam);
-                                        Logger.Log($"TYLER Shader level 4: {convertedStartParams} {convertedEndParams}");
+                                        // Logger.Log($"TYLER Shader level 4: {convertedStartParams} {convertedEndParams}");
                                     }
                                 }
                             }

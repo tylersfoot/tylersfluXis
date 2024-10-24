@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-// using fluXis.Game.Graphics.Shaders.Bloom;
+using fluXis.Game.Graphics.Shaders.Bloom;
 // using fluXis.Game.Graphics.Shaders.Chromatic;
 // using fluXis.Game.Graphics.Shaders.Greyscale;
 // using fluXis.Game.Graphics.Shaders.Invert;
@@ -8,8 +8,8 @@ using System.Collections.Generic;
 // using fluXis.Game.Graphics.Shaders.Noise;
 // using fluXis.Game.Graphics.Shaders.Retro;
 // using fluXis.Game.Graphics.Shaders.Vignette;
-// using fluXis.Game.Graphics.Shaders.ColorShift;
-// using fluXis.Game.Graphics.Shaders.Pixelate;
+using fluXis.Game.Graphics.Shaders.ColorShift;
+using fluXis.Game.Graphics.Shaders.Pixelate;
 using fluXis.Game.Graphics.Shaders.Glitch;
 // using fluXis.Game.Graphics.Shaders.Datamosh;
 
@@ -26,7 +26,7 @@ public static class ShaderSettings
             {
                 Name = "Bloom",
                 Description = "Adds a bloom effect to the screen.",
-                // ContainerType = typeof(BloomContainer),
+                ContainerType = typeof(BloomContainer),
                 Parameters = new Dictionary<string, ShaderParameter>
                 {
                     { "Strength", new SliderParameter
@@ -62,6 +62,7 @@ public static class ShaderSettings
             {
                 Name = "Color Shift",
                 Description = "Shifts the colors of the screen by a certain amount of degrees.",
+                ContainerType = typeof(ColorShiftContainer),
                 Parameters = new Dictionary<string, ShaderParameter>
                 {
                     { "Degrees", new SliderParameter
@@ -183,6 +184,7 @@ public static class ShaderSettings
             {
                 Name = "Pixelate",
                 Description = "Adds a pixelate effect to the screen.",
+                ContainerType = typeof(PixelateContainer),
                 Parameters = new Dictionary<string, ShaderParameter>
                 {
                     { "Strength", new SliderParameter

@@ -93,6 +93,7 @@ public partial class DesignShaderHandler : CompositeComponent
                 if (property != null && property.PropertyType == typeof(float))
                 {
                     property.SetValue(container, slider.Value);
+                    Logger.Log($"Setting {param.Key} to {slider.Value}"); 
                 }
             }
         }
@@ -103,7 +104,6 @@ public partial class DesignShaderHandler : CompositeComponent
         // Check for null dictionaries
         if (startParameters == null || endParameters == null)
         {
-            Logger.Log($"Start or End parameters are null for ShaderType {container.ShaderName}");
             return;
         }
 
