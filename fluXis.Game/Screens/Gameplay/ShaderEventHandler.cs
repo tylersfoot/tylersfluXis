@@ -12,12 +12,12 @@ namespace fluXis.Game.Screens.Gameplay;
 public partial class ShaderEventHandler : EventHandler<ShaderEvent>
 {
     private ShaderStackContainer stack { get; }
-    private ShaderType[] types { get; }
+    private string[] types { get; }
 
     public ShaderEventHandler(List<ShaderEvent> events, ShaderStackContainer stack)
         : base(events)
     {
-        types = events.Select(x => x.Type).Distinct().ToArray();
+        types = events.Select(x => x.ShaderName).Distinct().ToArray();
         this.stack = stack;
         Trigger = trigger;
     }
@@ -34,7 +34,7 @@ public partial class ShaderEventHandler : EventHandler<ShaderEvent>
 
     private void trigger(ShaderEvent ev)
     {
-        var handler = InternalChildren.OfType<TransformHandler>().FirstOrDefault(x => x.Type == ev.Type) ?? throw new Exception($"Handler with type {ev.ShaderName} is not in scene tree!");
+        var handler = InternalChildren.OfType<TransformHandler>().FirstOrDefault(x => x.Type == ev.ShaderName) ?? throw new Exception($"Handler with type {ev.ShaderName} is not in scene tree!");
 
         // handle Start Parameters if they exist and UseStartParams is true
         if (ev.UseStartParams)
@@ -68,12 +68,12 @@ public partial class ShaderEventHandler : EventHandler<ShaderEvent>
     private partial class TransformHandler : Drawable
     {
         private ShaderContainer container { get; }
-        public ShaderType Type { get; }
+        public string Type { get; }
 
         public TransformHandler(ShaderContainer container)
         {
             this.container = container;
-            Type = container.Type;
+            Type = container.ShaderName;
         }
 
         // set parameter values dynamically using reflection

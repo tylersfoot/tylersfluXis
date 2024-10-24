@@ -2,18 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using fluXis.Game.Graphics.Background;
 using fluXis.Game.Graphics.Shaders;
-using fluXis.Game.Graphics.Shaders.Bloom;
-using fluXis.Game.Graphics.Shaders.Chromatic;
-using fluXis.Game.Graphics.Shaders.Greyscale;
-using fluXis.Game.Graphics.Shaders.Invert;
-using fluXis.Game.Graphics.Shaders.Mosaic;
-using fluXis.Game.Graphics.Shaders.Noise;
-using fluXis.Game.Graphics.Shaders.Retro;
-using fluXis.Game.Graphics.Shaders.Vignette;
-using fluXis.Game.Graphics.Shaders.ColorShift;
-using fluXis.Game.Graphics.Shaders.Pixelate;
-using fluXis.Game.Graphics.Shaders.Glitch;
-using fluXis.Game.Graphics.Shaders.Datamosh;
 using fluXis.Game.Graphics.Sprites;
 using fluXis.Game.Map.Structures.Events;
 using fluXis.Game.Screens.Edit.Tabs.Design.Effects;
@@ -27,6 +15,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input.Events;
+using osu.Framework.Logging;
 using osuTK;
 using osuTK.Input;
 
@@ -98,30 +87,19 @@ public partial class DesignContainer : EditorTabContainer
     {
         shaders = new ShaderStackContainer();
 
-        var shaderTypes = Map.MapEvents.ShaderEvents.Select(x => x.Type).Distinct();
+        var shaderTypes = Map.MapEvents.ShaderEvents.Select(x => x.ShaderName).Distinct();
 
-        foreach (var type in shaderTypes)
+        foreach (var shaderName in shaderTypes)
         {
-            ShaderContainer shader = type switch
-            {
-                ShaderType.Chromatic => new ChromaticContainer(),
-                ShaderType.Greyscale => new GreyscaleContainer(),
-                ShaderType.Invert => new InvertContainer(),
-                ShaderType.Bloom => new BloomContainer(),
-                ShaderType.Mosaic => new MosaicContainer(),
-                ShaderType.Noise => new NoiseContainer(),
-                ShaderType.Vignette => new VignetteContainer(),
-                ShaderType.Retro => new RetroContainer(),
-                ShaderType.ColorShift => new ColorShiftContainer(),
-                ShaderType.Pixelate => new PixelateContainer(),
-                ShaderType.Glitch => new GlitchContainer(),
-                ShaderType.Datamosh => new DatamoshContainer(),
-                _ => null
-            };
+            ShaderContainer shader = ShaderSettings.CreateShaderContainer(shaderName);
 
             if (shader is null)
+            {
+                Logger.Log($"Shader '{shaderName}' not found", LoggingTarget.Runtime, LogLevel.Error);
                 continue;
+            }
 
+            // Set properties and add the shader to the stack
             shader.RelativeSizeAxes = Axes.Both;
             shaders.AddShader(shader);
         }
@@ -130,12 +108,51 @@ public partial class DesignContainer : EditorTabContainer
         return shaders;
     }
 
+
+    // private ShaderStackContainer createShaderStack()
+    // {
+    //     shaders = new ShaderStackContainer();
+
+    //     var shaderTypes = Map.MapEvents.ShaderEvents.Select(x => x.Type).Distinct();
+
+    //     foreach (var type in shaderTypes)
+    //     {
+
+
+    //         ShaderContainer shader = type switch
+    //         {
+    //             ShaderType.Chromatic => new ChromaticContainer(),
+    //             ShaderType.Greyscale => new GreyscaleContainer(),
+    //             ShaderType.Invert => new InvertContainer(),
+    //             ShaderType.Bloom => new BloomContainer(),
+    //             ShaderType.Mosaic => new MosaicContainer(),
+    //             ShaderType.Noise => new NoiseContainer(),
+    //             ShaderType.Vignette => new VignetteContainer(),
+    //             ShaderType.Retro => new RetroContainer(),
+    //             ShaderType.ColorShift => new ColorShiftContainer(),
+    //             ShaderType.Pixelate => new PixelateContainer(),
+    //             ShaderType.Glitch => new GlitchContainer(),
+    //             ShaderType.Datamosh => new DatamoshContainer(),
+    //             _ => null
+    //         };
+
+    //         if (shader is null)
+    //             continue;
+
+    //         shader.RelativeSizeAxes = Axes.Both;
+    //         shaders.AddShader(shader);
+    //     }
+
+    //     handler.ShaderStack = shaders;
+    //     return shaders;
+    // }
+
     private void checkForRebuild()
     {
-        var current = shaders.ShaderTypes;
-        var shaderTypes = Map.MapEvents.ShaderEvents.Select(x => x.Type).Distinct();
+        var current = shaders.ShaderNames;
+        var shaderTypes = Map.MapEvents.ShaderEvents.Select(x => x.ShaderName).Distinct();
 
-        if (!current.SequenceEqual(shaderTypes))
+        if (!current.Cast<string>().SequenceEqual(shaderTypes))
             rebuildShaderStack();
     }
 

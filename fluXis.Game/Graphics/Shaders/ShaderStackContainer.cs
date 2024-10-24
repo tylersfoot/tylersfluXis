@@ -11,7 +11,8 @@ public partial class ShaderStackContainer : CompositeDrawable
 {
     private readonly List<ShaderContainer> shaders = new();
 
-    public IReadOnlyList<ShaderType> ShaderTypes => shaders.DistinctBy(x => x.Type).Select(x => x.Type).ToList();
+    // public IReadOnlyList<ShaderType> ShaderTypes => shaders.DistinctBy(x => x.Type).Select(x => x.Type).ToList();
+    public IReadOnlyList<string> ShaderNames => shaders.DistinctBy(x => x.ShaderName).Select(x => x.ShaderName).ToList();
 
     public ShaderStackContainer()
     {
@@ -60,9 +61,11 @@ public partial class ShaderStackContainer : CompositeDrawable
         return children;
     }
 
+    // Fetch shader by its container type
     public T GetShader<T>() where T : ShaderContainer
         => shaders.FirstOrDefault(s => s.GetType() == typeof(T)) as T;
 
-    public ShaderContainer GetShader(ShaderType type)
-        => shaders.FirstOrDefault(s => s.Type == type);
+    // Fetch shader by its ShaderName instead of ShaderType
+    public ShaderContainer GetShader(string shaderName)
+        => shaders.FirstOrDefault(s => s.ShaderName == shaderName);
 }

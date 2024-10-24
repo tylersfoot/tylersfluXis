@@ -13,21 +13,42 @@ public class ShaderEvent : IMapEvent, IHasDuration, IHasEasing
     [JsonProperty("time")]
     public double Time { get; set; }
 
+    // [JsonProperty("shader")]
+    // public string ShaderName
+    // {
+    //     get => Type.ToString();
+    //     set
+    //     {
+    //         if (Enum.TryParse<ShaderType>(value, out var type))
+    //             Type = type;
+    //         else
+    //             Logger.Log($"Failed to parse {value} as {nameof(ShaderType)}!", LoggingTarget.Runtime, LogLevel.Error);
+    //     }
+    // }
+
+    // [JsonIgnore]
+    // public ShaderType Type { get; set; } = ShaderType.Bloom;
+
+    private string shaderName;
+
     [JsonProperty("shader")]
     public string ShaderName
     {
-        get => Type.ToString();
+        get => shaderName;
         set
         {
-            if (Enum.TryParse<ShaderType>(value, out var type))
-                Type = type;
+            // Validate the shader name against the available shaders in ShaderSettings
+            if (ShaderSettings.Shaders.ContainsKey(value))
+            {
+                shaderName = value;
+            }
             else
-                Logger.Log($"Failed to parse {value} as {nameof(ShaderType)}!", LoggingTarget.Runtime, LogLevel.Error);
+            {
+                Logger.Log($"Failed to find shader with name '{value}' in ShaderSettings!", LoggingTarget.Runtime, LogLevel.Error);
+                shaderName = "Unknown"; // Assign a default value or handle as needed
+            }
         }
     }
-
-    [JsonIgnore]
-    public ShaderType Type { get; set; } = ShaderType.Bloom;
 
     [JsonProperty("duration")]
     public double Duration { get; set; }
@@ -103,18 +124,18 @@ public class ShaderEvent : IMapEvent, IHasDuration, IHasEasing
 }
 
 
-public enum ShaderType
-{
-    Bloom,
-    Greyscale,
-    Invert,
-    Chromatic,
-    Mosaic,
-    Noise,
-    Vignette,
-    Retro,
-    ColorShift,
-    Pixelate,
-    Glitch,
-    Datamosh
-}
+// public enum ShaderType
+// {
+//     Bloom,
+//     Greyscale,
+//     Invert,
+//     Chromatic,
+//     Mosaic,
+//     Noise,
+//     Vignette,
+//     Retro,
+//     ColorShift,
+//     Pixelate,
+//     Glitch,
+//     Datamosh
+// }

@@ -26,15 +26,15 @@ public partial class DesignShaderHandler : CompositeComponent
         if (ShaderStack is null)
             return;
 
-        var groups = map.MapEvents.ShaderEvents.GroupBy(x => x.Type);
+        var groups = map.MapEvents.ShaderEvents.GroupBy(x => x.ShaderName);
 
         foreach (var group in groups)
             handleGroup(group.Key, group);
     }
 
-    private void handleGroup(ShaderType type, IEnumerable<ShaderEvent> events)
+    private void handleGroup(string shaderName, IEnumerable<ShaderEvent> events)
     {
-        var container = ShaderStack.GetShader(type);
+        var container = ShaderStack.GetShader(shaderName);
 
         if (container == null)
             return;
@@ -70,10 +70,11 @@ public partial class DesignShaderHandler : CompositeComponent
 
     private void resetParameters(ShaderContainer container)
     {
-        container.Strength = 0;
+        // container.Strength = 0;
+        container.InitializeShaderParameters();
 
         // dynamically reset all shader parameters
-        foreach (var param in ShaderSettings.Shaders[container.Type.ToString()].Parameters)
+        foreach (var param in ShaderSettings.Shaders[container.ShaderName].Parameters)
         {
             if (container.GetType().GetProperty(param.Key)?.PropertyType == typeof(float))
             {
@@ -102,7 +103,7 @@ public partial class DesignShaderHandler : CompositeComponent
         // Check for null dictionaries
         if (startParameters == null || endParameters == null)
         {
-            Logger.Log($"Start or End parameters are null for ShaderType {container.Type}");
+            Logger.Log($"Start or End parameters are null for ShaderType {container.ShaderName}");
             return;
         }
 
@@ -152,7 +153,7 @@ public partial class DesignShaderHandler : CompositeComponent
                 else
                 {
                     // Log a warning if the end parameter is missing or null
-                    Logger.Log($"End parameter {param.Key} not found or invalid for ShaderType {container.Type}");
+                    Logger.Log($"End parameter {param.Key} not found or invalid for ShaderType {container.ShaderName}");
                 }
             }
         }

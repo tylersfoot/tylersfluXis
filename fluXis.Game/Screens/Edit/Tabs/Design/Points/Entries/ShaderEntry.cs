@@ -56,7 +56,7 @@ public partial class ShaderEntry : PointListEntry
         {
             Time = Object.Time,
             Duration = shader.Duration,
-            Type = shader.Type,
+            ShaderName = shader.ShaderName,
             UseStartParams = shader.UseStartParams
         };
 
@@ -111,15 +111,15 @@ public partial class ShaderEntry : PointListEntry
         var settings = new List<Drawable>
         {
             new PointSettingsLength<ShaderEvent>(Map, shader, BeatLength),
-            new PointSettingsDropdown<ShaderType>
+            new PointSettingsDropdown<string>
             {
                 Text = "Shader",
                 TooltipText = "The shader to apply to the playfield.",
-                CurrentValue = shader.Type,
-                Items = Enum.GetValues<ShaderType>().ToList(),
+                CurrentValue = shader.ShaderName,
+                Items = ShaderSettings.Shaders.Keys.ToList(),
                 OnValueChanged = value =>
                 {
-                    shader.Type = value;
+                    shader.ShaderName = value;
                     Map.Update(shader);
                 }
             },

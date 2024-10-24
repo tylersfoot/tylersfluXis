@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using fluXis.Game.Graphics.Shaders;
@@ -6,7 +7,9 @@ using fluXis.Game.Map.Structures.Bases;
 using fluXis.Game.Map.Structures.Events;
 using fluXis.Shared.Utils;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using osu.Framework.Graphics;
+using osu.Framework.Logging;
 using SixLabors.ImageSharp;
 
 namespace fluXis.Game.Map;
@@ -75,15 +78,133 @@ public class MapEvents : IDeepCloneable<MapEvents>
                          && TimeOffsetEvents.Count == 0
                          && NoteEvents.Count == 0;
 
+
+    // public static T Load<T>(string content)
+    //     where T : MapEvents, new()
+    // {
+    //     if (!content.Trim().StartsWith('{'))
+    //         return new T().loadLegacy(content) as T;
+
+    //     var events = content.Deserialize<T>();
+    //     return events.Sort() as T;
+    // }
+
     public static T Load<T>(string content)
-        where T : MapEvents, new()
+    where T : MapEvents, new()
     {
+        // legacy legacy check
         if (!content.Trim().StartsWith('{'))
             return new T().loadLegacy(content) as T;
 
-        var events = content.Deserialize<T>();
+        // First, parse the content into a JObject to inspect and modify if necessary.
+        var jsonObject = JsonConvert.DeserializeObject<JObject>(content);
+
+        // Check if it contains shader events, and if so, iterate over them to detect and convert the legacy format.
+        var shaderEvents = jsonObject["shader"]?.ToObject<JArray>();
+        
+        if (shaderEvents != null)
+        {
+            foreach (var shaderEvent in shaderEvents)
+            {
+                try
+                {
+                    var shaderEventObject = shaderEvent as JObject;
+
+                    // Get the shader name from the event
+                    string shaderName = shaderEventObject["shader"]?.ToString();
+
+                    Logger.Log($"TYLER Shader level 1: {shaderName}");
+
+                    if (ShaderSettings.Shaders.TryGetValue(shaderName, out var shaderInfo))
+                    {
+                        if (shaderEventObject["start-params"] is JObject startParamsObject && shaderEventObject["end-params"] is JObject endParamsObject)
+                        {
+                            Logger.Log($"TYLER Shader level 2: {startParamsObject} {endParamsObject}");
+                            var convertedStartParams = new JObject();
+                            var convertedEndParams = new JObject();
+
+                            // Iterate through all parameters in the shader's settings and match with the legacy format by name
+                            foreach (var shaderParam in shaderInfo.Parameters)
+                            {
+                                string shaderParamKey = shaderParam.Key; // e.g., Strength, BlockSize, etc.
+                                ShaderParameter paramInfo = shaderParam.Value;
+
+                                // Normalize the shaderParamKey to kebab-case for comparison with legacy format e.g., strength, block-size, etc.
+                                string jsonKey = string.Concat(shaderParamKey.Select((x, i) =>
+                                 i > 0 && char.IsUpper(x) ? "-" + char.ToLower(x) : char.ToLower(x).ToString()));
+
+                                // Try to match the legacy parameter in the start-params and end-params objects
+                                float? startValue = startParamsObject.ContainsKey(jsonKey) ? startParamsObject[jsonKey].Value<float>() : null;
+                                float? endValue = endParamsObject.ContainsKey(jsonKey) ? endParamsObject[jsonKey].Value<float>() : null;
+
+                                Logger.Log($"TYLER Shader level 3: {startValue} {endValue}");
+
+                                // If both start and end values are found, proceed
+                                if (startValue.HasValue && endValue.HasValue)
+                                {
+                                    if (paramInfo is SliderParameter slider)
+                                    {
+                                        // Create new parameter objects with the appropriate value
+                                        var newStartParam = new SliderParameter
+                                        {
+                                            Name = slider.Name,
+                                            Tooltip = slider.Tooltip,
+                                            SliderMin = slider.SliderMin,
+                                            SliderMax = slider.SliderMax,
+                                            SliderStep = slider.SliderStep,
+                                            Value = startValue.Value
+                                        };
+
+                                        var newEndParam = new SliderParameter
+                                        {
+                                            Name = slider.Name,
+                                            Tooltip = slider.Tooltip,
+                                            SliderMin = slider.SliderMin,
+                                            SliderMax = slider.SliderMax,
+                                            SliderStep = slider.SliderStep,
+                                            Value = endValue.Value
+                                        };
+
+                                        // Add to converted params
+                                        convertedStartParams[shaderParamKey] = JObject.FromObject(newStartParam);
+                                        convertedEndParams[shaderParamKey] = JObject.FromObject(newEndParam);
+                                        Logger.Log($"TYLER Shader level 4: {convertedStartParams} {convertedEndParams}");
+                                    }
+                                }
+                            }
+
+                            // Replace arrays with dictionaries in the shader event object
+                            shaderEventObject["start-params"] = convertedStartParams;
+                            shaderEventObject["end-params"] = convertedEndParams;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error and skip this shader event
+                    Logger.Log($"Error processing shader event: {ex.Message}", LoggingTarget.Runtime, LogLevel.Error);
+                    continue; // Skip to the next shader event
+                }
+            }
+            
+            jsonObject["shader"] = shaderEvents;
+        }
+
+
+        // Now, convert the modified JObject back to a JSON string
+        var updatedContent = jsonObject.ToString();
+
+        // Proceed with deserializing the modified JSON content to MapEvents
+        var events = JsonConvert.DeserializeObject<T>(updatedContent);
         return events.Sort() as T;
     }
+
+    // private static string toKebabCase(string input)
+    // {
+    //     return string.Concat(input.Select((x, i) =>
+    //         i > 0 && char.IsUpper(x) ? "-" + char.ToLower(x) : char.ToLower(x).ToString()));
+    // }
+
 
     private MapEvents loadLegacy(string content)
     {
@@ -200,12 +321,14 @@ public class MapEvents : IDeepCloneable<MapEvents>
                     });
                     break;
                 case "Shader":
+                    // ! PROBABLY DOESNT WORK
                     if (args.Length < 3)
                         continue;
 
                     var startIdx = line.IndexOf('{');
                     var endIdx = line.LastIndexOf('}');
-
+                    
+                    // returns -1 if {} is missing
                     if (startIdx == -1 || endIdx == -1)
                         continue;
 

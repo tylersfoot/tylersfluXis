@@ -5,36 +5,32 @@ namespace fluXis.Game.Graphics.Shaders.Glitch;
 
 public partial class GlitchContainer : ShaderContainer
 {
-    private float blockSize;
-    private float colorRate;
+    public float Strength { get; private set; }
+    public float BlockSize { get; private set; }
+    public float ColorRate { get; private set; }
 
-    public float BlockSize
+    public override void ApplyShaderParameters(ShaderEvent shaderEvent)
     {
-        get => blockSize;
-        set
+        if (shaderEvent.StartParameters.TryGetValue("Strength", out var strengthParam) && strengthParam is SliderParameter strengthSlider)
         {
-            if (value == blockSize)
-                return;
-
-            blockSize = value;
-            Invalidate(Invalidation.DrawNode);
+            Strength = strengthSlider.Value;
         }
-    }
-
-    public float ColorRate
-    {
-        get => colorRate;
-        set
+        
+        if (shaderEvent.StartParameters.TryGetValue("BlockSize", out var blockSizeParam) && blockSizeParam is SliderParameter blockSizeSlider)
         {
-            if (value == colorRate)
-                return;
-
-            colorRate = value;
-            Invalidate(Invalidation.DrawNode);
+            BlockSize = blockSizeSlider.Value;
         }
+
+        if (shaderEvent.StartParameters.TryGetValue("ColorRate", out var colorRateParam) && colorRateParam is SliderParameter colorRateSlider)
+        {
+            ColorRate = colorRateSlider.Value;
+        }
+
+        Invalidate(Invalidation.DrawNode);
     }
 
     protected override string FragmentShader => "Glitch";
-    public override ShaderType Type => ShaderType.Glitch;
+    public override string ShaderName => "Glitch";
+
     protected override DrawNode CreateShaderDrawNode() => new GlitchContainerDrawNode(this, SharedData);
 }

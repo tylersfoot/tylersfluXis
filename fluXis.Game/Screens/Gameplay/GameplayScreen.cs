@@ -13,18 +13,6 @@ using fluXis.Game.Database;
 using fluXis.Game.Database.Maps;
 using fluXis.Game.Graphics.Background;
 using fluXis.Game.Graphics.Shaders;
-using fluXis.Game.Graphics.Shaders.Bloom;
-using fluXis.Game.Graphics.Shaders.Chromatic;
-using fluXis.Game.Graphics.Shaders.Greyscale;
-using fluXis.Game.Graphics.Shaders.Invert;
-using fluXis.Game.Graphics.Shaders.Mosaic;
-using fluXis.Game.Graphics.Shaders.Noise;
-using fluXis.Game.Graphics.Shaders.Retro;
-using fluXis.Game.Graphics.Shaders.Vignette;
-using fluXis.Game.Graphics.Shaders.ColorShift;
-using fluXis.Game.Graphics.Shaders.Pixelate;
-using fluXis.Game.Graphics.Shaders.Glitch;
-using fluXis.Game.Graphics.Shaders.Datamosh;
 using fluXis.Game.Input;
 using fluXis.Game.Map;
 using fluXis.Game.Map.Structures.Events;
@@ -242,30 +230,15 @@ public partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<FluXisGlo
         dependencies.Cache(Playfield = new Playfield(experiments.Get<bool>(ExperimentConfig.Seeking)));
 
         var shaders = new ShaderStackContainer();
-        var shaderTypes = MapEvents.ShaderEvents.Select(e => e.Type).Distinct().ToList();
+        var shaderTypes = MapEvents.ShaderEvents.Select(e => e.ShaderName).Distinct().ToList();
 
-        foreach (var shaderType in shaderTypes)
+        foreach (var shaderName in shaderTypes)
         {
-            ShaderContainer shader = shaderType switch
-            {
-                ShaderType.Chromatic => new ChromaticContainer(),
-                ShaderType.Greyscale => new GreyscaleContainer(),
-                ShaderType.Invert => new InvertContainer(),
-                ShaderType.Bloom => new BloomContainer(),
-                ShaderType.Mosaic => new MosaicContainer(),
-                ShaderType.Noise => new NoiseContainer(),
-                ShaderType.Vignette => new VignetteContainer(),
-                ShaderType.Retro => new RetroContainer(),
-                ShaderType.ColorShift => new ColorShiftContainer(),
-                ShaderType.Pixelate => new PixelateContainer(),
-                ShaderType.Glitch => new GlitchContainer(),
-                ShaderType.Datamosh => new DatamoshContainer(),
-                _ => null
-            };
+            ShaderContainer shader = ShaderSettings.CreateShaderContainer(shaderName);
 
             if (shader == null)
             {
-                Logger.Log($"Shader '{shaderType}' not found", LoggingTarget.Runtime, LogLevel.Error);
+                Logger.Log($"Shader '{shaderName}' not found", LoggingTarget.Runtime, LogLevel.Error);
                 continue;
             }
 

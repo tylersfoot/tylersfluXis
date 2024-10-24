@@ -1,6 +1,20 @@
+using System;
 using System.Collections.Generic;
+// using fluXis.Game.Graphics.Shaders.Bloom;
+// using fluXis.Game.Graphics.Shaders.Chromatic;
+// using fluXis.Game.Graphics.Shaders.Greyscale;
+// using fluXis.Game.Graphics.Shaders.Invert;
+// using fluXis.Game.Graphics.Shaders.Mosaic;
+// using fluXis.Game.Graphics.Shaders.Noise;
+// using fluXis.Game.Graphics.Shaders.Retro;
+// using fluXis.Game.Graphics.Shaders.Vignette;
+// using fluXis.Game.Graphics.Shaders.ColorShift;
+// using fluXis.Game.Graphics.Shaders.Pixelate;
+using fluXis.Game.Graphics.Shaders.Glitch;
+// using fluXis.Game.Graphics.Shaders.Datamosh;
 
 namespace fluXis.Game.Graphics.Shaders;
+
 
 public static class ShaderSettings
 {
@@ -12,6 +26,7 @@ public static class ShaderSettings
             {
                 Name = "Bloom",
                 Description = "Adds a bloom effect to the screen.",
+                // ContainerType = typeof(BloomContainer),
                 Parameters = new Dictionary<string, ShaderParameter>
                 {
                     { "Strength", new SliderParameter
@@ -24,11 +39,12 @@ public static class ShaderSettings
                 }
             }
         },
-        { "ChromaticAbberation", 
+        { "Chromatic", 
             new ShaderInfo
             {
                 Name = "Chromatic Abberation",
                 Description = "Adds a chromatic abberation effect to the screen.",
+                // ContainerType = typeof(ChromaticContainer),
                 Parameters = new Dictionary<string, ShaderParameter>
                 {
                     { "Strength", new SliderParameter
@@ -67,6 +83,7 @@ public static class ShaderSettings
             {
                 Name = "Glitch",
                 Description = "Glitches the screen.",
+                ContainerType = typeof(GlitchContainer),
                 Parameters = new Dictionary<string, ShaderParameter>
                 {
                     { "Strength", new SliderParameter
@@ -213,12 +230,28 @@ public static class ShaderSettings
             }
         },  
     };
+
+    // Factory method to create the ShaderContainer based on the shader name
+    public static ShaderContainer CreateShaderContainer(string shaderName)
+    {
+        if (Shaders.TryGetValue(shaderName, out var shaderInfo))
+        {
+            if (shaderInfo.ContainerType != null)
+            {
+                // Dynamically create the ShaderContainer using reflection
+                return Activator.CreateInstance(shaderInfo.ContainerType) as ShaderContainer;
+            }
+        }
+
+        return null; // Return null if the shader name or container type is not found
+    }
 }
 
 public class ShaderInfo
 {
     public string Name { get; set; }
     public string Description { get; set; }
+    public Type ContainerType { get; set; } // Add the container type
     public Dictionary<string, ShaderParameter> Parameters { get; set; }
 }
 
@@ -268,3 +301,4 @@ public enum ShaderParameterType
     Checkbox,
     Dropdown
 }
+
