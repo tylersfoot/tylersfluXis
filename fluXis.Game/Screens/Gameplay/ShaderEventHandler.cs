@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using fluXis.Game.Graphics.Shaders;
-using fluXis.Game.Graphics.Shaders.Glitch;
 using fluXis.Game.Map.Structures.Events;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -46,6 +45,7 @@ public partial class ShaderEventHandler : EventHandler<ShaderEvent>
                     case SliderParameter slider:
                         handler.SetParameterTo(param.Key, slider.Value);
                         break;
+
                     case CheckboxParameter checkbox:
                         handler.SetParameterTo(param.Key, checkbox.Value ? 1f : 0f); // Boolean represented as 1 or 0 for simplicity
                         break;

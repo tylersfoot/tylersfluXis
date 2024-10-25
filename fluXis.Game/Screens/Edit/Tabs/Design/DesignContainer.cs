@@ -3,7 +3,6 @@ using System.Linq;
 using fluXis.Game.Graphics.Background;
 using fluXis.Game.Graphics.Shaders;
 using fluXis.Game.Graphics.Sprites;
-using fluXis.Game.Map.Structures.Events;
 using fluXis.Game.Screens.Edit.Tabs.Design.Effects;
 using fluXis.Game.Screens.Edit.Tabs.Design.Playfield;
 using fluXis.Game.Screens.Edit.Tabs.Design.Points;

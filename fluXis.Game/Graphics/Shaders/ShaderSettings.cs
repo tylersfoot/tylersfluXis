@@ -32,7 +32,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the bloom effect.",
                         }
                     }
@@ -50,7 +49,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the chromatic abberation effect.",
                         }
                     }
@@ -68,7 +66,6 @@ public static class ShaderSettings
                     { "Degrees", new SliderParameter
                         {
                             Name = "Degrees",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The amount of degrees to shift the colors by. (360 = back to normal)",
                             SliderMin = 0f,
                             SliderMax = 360f,
@@ -90,21 +87,18 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the glitch effect.",
                         }
                     },
                     { "BlockSize", new SliderParameter
                         {
                             Name = "Block Size",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The size of the glitch blocks.",
                         }
                     },
                     { "ColorRate", new SliderParameter
                         {
                             Name = "Color Rate",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The rate at which the colors change.",
                         }
                     }
@@ -121,7 +115,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the greyscale effect.",
                         }
                     }
@@ -138,7 +131,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the invert effect.",
                         }
                     }
@@ -155,7 +147,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the mosaic effect.",
                         }
                     }
@@ -172,7 +163,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the noise effect.",
                         }
                     }
@@ -190,7 +180,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the pixelate effect.",
                         }
                     }
@@ -207,7 +196,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the retro effect.",
                         }
                     }
@@ -224,7 +212,6 @@ public static class ShaderSettings
                     { "Strength", new SliderParameter
                         {
                             Name = "Strength",
-                            Type = ShaderParameterType.Slider,
                             Tooltip = "The strength of the vignette effect.",
                         }
                     }
@@ -247,6 +234,22 @@ public static class ShaderSettings
 
         return null; // Return null if the shader name or container type is not found
     }
+
+    public static ShaderParameter ConvertToParameterType(ShaderParameter param)
+    {
+        switch (param.Type.ToLower())
+        {
+            case "slider":
+                return param as SliderParameter ?? new SliderParameter{};
+
+            case "checkbox":
+                return param as CheckboxParameter ?? new CheckboxParameter{};
+
+            default:
+                throw new InvalidOperationException($"Unknown ShaderParameter type: {param.Type}");
+        }
+    }
+
 }
 
 public class ShaderInfo
@@ -260,7 +263,7 @@ public class ShaderInfo
 public class ShaderParameter
 {
     public string Name { get; set; }
-    public ShaderParameterType Type { get; set; }
+    public string Type { get; set; } = "slider"; // defaults to slider, checkbox
     public string Tooltip { get; set; } = string.Empty;
     public bool HasRequirements { get; set; } = false; // if true, needs Requirements to be on
     public List<string> Requirements { get; set; } = new(); // names of checkboxes that need to be on for this parameter to work

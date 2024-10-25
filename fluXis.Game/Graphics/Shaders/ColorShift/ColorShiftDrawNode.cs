@@ -5,8 +5,6 @@ using osu.Framework.Graphics.Primitives;
 using osu.Framework.Graphics.Rendering;
 using osu.Framework.Graphics.Shaders.Types;
 using osuTK.Graphics;
-using fluXis.Game.Graphics.Shaders;
-using System.Linq;
 
 namespace fluXis.Game.Graphics.Shaders.ColorShift;
 

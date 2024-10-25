@@ -93,7 +93,7 @@ public partial class DesignShaderHandler : CompositeComponent
                 if (property != null && property.PropertyType == typeof(float))
                 {
                     property.SetValue(container, slider.Value);
-                    Logger.Log($"Setting {param.Key} to {slider.Value}"); 
+                    Logger.Log($"Setting {param.Key} to {slider.Value}");
                 }
             }
         }
@@ -126,7 +126,7 @@ public partial class DesignShaderHandler : CompositeComponent
 
                     // Calculate the interpolated value
                     var interpolatedValue = Interpolation.ValueAt(currentTime, startValue, endValue, startTime, startTime + duration);
-                    
+
                     // Find the property in the container by the parameter name (key)
                     var property = container.GetType().GetProperty(param.Key);
 
@@ -161,7 +161,7 @@ public partial class DesignShaderHandler : CompositeComponent
         // Log all available properties in the container to compare
         foreach (var prop in properties)
         {
-            Logger.Log($"Available property: {prop.Name}, Type: {prop.PropertyType}");
+            // Logger.Log($"Available property: {prop.Name}, Type: {prop.PropertyType}");
         }
     }
 

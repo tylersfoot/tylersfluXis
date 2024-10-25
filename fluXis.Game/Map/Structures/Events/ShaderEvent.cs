@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using fluXis.Game.Graphics.Shaders;
 using fluXis.Game.Map.Structures.Bases;
@@ -70,6 +69,8 @@ public class ShaderEvent : IMapEvent, IHasDuration, IHasEasing
     public void InitializeParameters()
     {
         var shaderInfo = ShaderSettings.Shaders[ShaderName];
+        StartParameters = new Dictionary<string, ShaderParameter>();
+        EndParameters = new Dictionary<string, ShaderParameter>();
 
         foreach (var param in shaderInfo.Parameters)
         {
@@ -122,20 +123,3 @@ public class ShaderEvent : IMapEvent, IHasDuration, IHasEasing
         return 0f; // default fallback
     }
 }
-
-
-// public enum ShaderType
-// {
-//     Bloom,
-//     Greyscale,
-//     Invert,
-//     Chromatic,
-//     Mosaic,
-//     Noise,
-//     Vignette,
-//     Retro,
-//     ColorShift,
-//     Pixelate,
-//     Glitch,
-//     Datamosh
-// }

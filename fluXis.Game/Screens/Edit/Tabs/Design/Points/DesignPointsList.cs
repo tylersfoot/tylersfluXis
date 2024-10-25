@@ -111,7 +111,11 @@ public partial class DesignPointsList : PointsList
             new("HitObject Fade", FluXisColors.HitObjectFade, () => Create(new HitObjectFadeEvent())),
             new("HitObject Ease", FluXisColors.HitObjectEase, () => Create(new HitObjectEaseEvent())),
             new("Beat Pulse", FluXisColors.BeatPulse, () => Create(new BeatPulseEvent())),
-            new("Shader", FluXisColors.Shader, () => Create(new ShaderEvent { ShaderName = "Bloom" })),
+            new("Shader", FluXisColors.Shader, () => {
+                var shader = new ShaderEvent { ShaderName = "Bloom" };
+                shader.InitializeParameters();
+                Create(shader);
+            }),
             new("Scroll Multiplier", FluXisColors.ScrollMultiply, () => Create(new ScrollMultiplierEvent())),
             new("Time Offset", FluXisColors.TimeOffset, () => Create(new TimeOffsetEvent())),
             new("Note", FluXisColors.Note, () => Create(new NoteEvent())),

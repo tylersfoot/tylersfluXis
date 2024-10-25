@@ -1,7 +1,5 @@
 using fluXis.Game.Graphics.Containers;
 using fluXis.Game.Graphics.Shaders.Bloom;
-using fluXis.Game.Graphics.Shaders.Chromatic;
-using fluXis.Game.Graphics.Shaders.Greyscale;
 using fluXis.Game.Map.Drawables;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;

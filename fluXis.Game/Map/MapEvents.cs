@@ -90,7 +90,7 @@ public class MapEvents : IDeepCloneable<MapEvents>
     // }
 
     public static T Load<T>(string content)
-    where T : MapEvents, new()
+        where T : MapEvents, new()
     {
         // legacy legacy check
         if (!content.Trim().StartsWith('{'))
@@ -101,9 +101,10 @@ public class MapEvents : IDeepCloneable<MapEvents>
 
         // Check if it contains shader events, and if so, iterate over them to detect and convert the legacy format.
         var shaderEvents = jsonObject["shader"]?.ToObject<JArray>();
-        
+
         if (shaderEvents != null)
         {
+
             foreach (var shaderEvent in shaderEvents)
             {
                 try
@@ -113,13 +114,11 @@ public class MapEvents : IDeepCloneable<MapEvents>
                     // Get the shader name from the event
                     string shaderName = shaderEventObject["shader"]?.ToString();
 
-                    Logger.Log($"TYLER Shader level 1: {shaderName}");
-
                     if (ShaderSettings.Shaders.TryGetValue(shaderName, out var shaderInfo))
                     {
+                        Logger.Log($"fuck! {shaderName}");
                         if (shaderEventObject["start-params"] is JObject startParamsObject && shaderEventObject["end-params"] is JObject endParamsObject)
                         {
-                            // Logger.Log($"TYLER Shader level 2: {startParamsObject} {endParamsObject}");
                             var convertedStartParams = new JObject();
                             var convertedEndParams = new JObject();
 
@@ -127,22 +126,26 @@ public class MapEvents : IDeepCloneable<MapEvents>
                             foreach (var shaderParam in shaderInfo.Parameters)
                             {
                                 string shaderParamKey = shaderParam.Key; // e.g., Strength, BlockSize, etc.
-                                ShaderParameter paramInfo = shaderParam.Value;
+                                ShaderParameter paramInfo = ShaderSettings.ConvertToParameterType(shaderParam.Value);
 
                                 // Normalize the shaderParamKey to kebab-case for comparison with legacy format e.g., strength, block-size, etc.
-                                string jsonKey = string.Concat(shaderParamKey.Select((x, i) =>
-                                 i > 0 && char.IsUpper(x) ? "-" + char.ToLower(x) : char.ToLower(x).ToString()));
+                                // string jsonKey = string.Concat(shaderParamKey.Select((x, i) =>
+                                //     i > 0 && char.IsUpper(x) ? "-" + char.ToLower(x) : char.ToLower(x).ToString()));
+                                string jsonKey = shaderParamKey;
+
+                                Logger.Log($"jeez! {startParamsObject}");
 
                                 // Try to match the legacy parameter in the start-params and end-params objects
-                                float? startValue = startParamsObject.ContainsKey(jsonKey) ? startParamsObject[jsonKey].Value<float>() : null;
+                                float? startValue = startParamsObject.ContainsKey(jsonKey) ? startParamsObject[jsonKey].Value.Value<float>() : null;
                                 float? endValue = endParamsObject.ContainsKey(jsonKey) ? endParamsObject[jsonKey].Value<float>() : null;
 
-                                // Logger.Log($"TYLER Shader level 3: {startValue} {endValue}");
-
+                                Logger.Log($"god damn it balls hell no! {startParamsObject.ContainsKey(jsonKey)} {startParamsObject} {jsonKey} {shaderParamKey}");
                                 // If both start and end values are found, proceed
                                 if (startValue.HasValue && endValue.HasValue)
                                 {
-                                    if (paramInfo is SliderParameter slider)
+                                    Logger.Log($"fucking balls hell yeah {startValue}");
+
+                                    if (paramInfo is SliderParameter slider) // add checkbox shit later
                                     {
                                         // Create new parameter objects with the appropriate value
                                         var newStartParam = new SliderParameter
@@ -165,10 +168,8 @@ public class MapEvents : IDeepCloneable<MapEvents>
                                             Value = endValue.Value
                                         };
 
-                                        // Add to converted params
                                         convertedStartParams[shaderParamKey] = JObject.FromObject(newStartParam);
                                         convertedEndParams[shaderParamKey] = JObject.FromObject(newEndParam);
-                                        // Logger.Log($"TYLER Shader level 4: {convertedStartParams} {convertedEndParams}");
                                     }
                                 }
                             }
@@ -182,11 +183,11 @@ public class MapEvents : IDeepCloneable<MapEvents>
                 catch (Exception ex)
                 {
                     // Log the error and skip this shader event
-                    Logger.Log($"Error processing shader event: {ex.Message}", LoggingTarget.Runtime, LogLevel.Error);
+                    Logger.Error(ex, $"Error processing shader event");
                     continue; // Skip to the next shader event
                 }
             }
-            
+
             jsonObject["shader"] = shaderEvents;
         }
 
@@ -327,7 +328,7 @@ public class MapEvents : IDeepCloneable<MapEvents>
 
                     var startIdx = line.IndexOf('{');
                     var endIdx = line.LastIndexOf('}');
-                    
+
                     // returns -1 if {} is missing
                     if (startIdx == -1 || endIdx == -1)
                         continue;

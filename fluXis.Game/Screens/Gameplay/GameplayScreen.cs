@@ -15,7 +15,6 @@ using fluXis.Game.Graphics.Background;
 using fluXis.Game.Graphics.Shaders;
 using fluXis.Game.Input;
 using fluXis.Game.Map;
-using fluXis.Game.Map.Structures.Events;
 using fluXis.Game.Mods;
 using fluXis.Game.Online;
 using fluXis.Game.Online.Activity;

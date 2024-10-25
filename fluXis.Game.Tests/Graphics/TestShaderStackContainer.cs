@@ -1,13 +1,6 @@
 using System.Collections.Generic;
 using fluXis.Game.Graphics.Background;
 using fluXis.Game.Graphics.Shaders;
-using fluXis.Game.Graphics.Shaders.Chromatic;
-using fluXis.Game.Graphics.Shaders.Greyscale;
-using fluXis.Game.Graphics.Shaders.Invert;
-using fluXis.Game.Graphics.Shaders.Mosaic;
-using fluXis.Game.Graphics.Shaders.Noise;
-using fluXis.Game.Graphics.Shaders.Retro;
-using fluXis.Game.Graphics.Shaders.Vignette;
 using fluXis.Game.Map;
 using fluXis.Game.Mods;
 using fluXis.Game.Replays;

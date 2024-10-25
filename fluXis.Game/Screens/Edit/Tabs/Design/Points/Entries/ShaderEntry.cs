@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using fluXis.Game.Graphics.Shaders;
@@ -11,6 +10,7 @@ using fluXis.Game.Screens.Edit.Tabs.Shared.Points.Settings;
 using fluXis.Game.Screens.Edit.Tabs.Shared.Points.Settings.Preset;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
+using osu.Framework.Logging;
 
 namespace fluXis.Game.Screens.Edit.Tabs.Design.Points.Entries;
 
@@ -48,6 +48,7 @@ public partial class ShaderEntry : PointListEntry
 
     public ShaderEntry(ShaderEvent obj) : base(obj)
     {
+        Logger.Log($"TYLER shader Entry!!! {obj}");
     }
 
     public override ITimedObject CreateClone()
@@ -119,23 +120,30 @@ public partial class ShaderEntry : PointListEntry
                 Items = ShaderSettings.Shaders.Keys.ToList(),
                 OnValueChanged = value =>
                 {
+                    RequestClose?.Invoke();
                     shader.ShaderName = value;
+                    shader.InitializeParameters();
                     Map.Update(shader);
+                    OpenSettings();
                 }
             },
             startValToggle
         };
 
         // dynamically generate UI elements based on the shader's parameters
-        foreach (var param in shader.StartParameters)
+        foreach (var (key, param) in shader.StartParameters)
         {
-            var startParameter = param.Value;
+            // param = key val pair of string + shaderparameter
+            // Logger.Log($"TYLER parameter moment!!! {param} {param.Value} {param.GetType()}");
+            // so param.Value aka startParameter = ShaderParameter
+            Logger.Log($"TYLER parameter moment!!! {param.GetType()} {param.GetType() == typeof(SliderParameter)}");
+            //  fluXis.Game.Graphics.Shaders.ShaderParameter False
 
-            switch (startParameter.Type)
+            switch (param)
             {
-                case ShaderParameterType.Slider:
-                    var startSlider = startParameter as SliderParameter;
-                    var endSlider = shader.EndParameters[param.Key] as SliderParameter;
+                case SliderParameter startSlider:
+                    Logger.Log($"TYLER slider time!! {startSlider} {startSlider.Value} {startSlider.GetType()}");
+                    var endSlider = shader.EndParameters[key] as SliderParameter;
 
                     settings.Add(new PointSettingsSlider<float>
                     {
@@ -169,9 +177,7 @@ public partial class ShaderEntry : PointListEntry
                     });
                     break;
 
-                case ShaderParameterType.Checkbox:
-                    var checkbox = startParameter as CheckboxParameter;
-
+                case CheckboxParameter checkbox:
                     settings.Add(new PointSettingsToggle
                     {
                         Text = $"{checkbox.Name}",
