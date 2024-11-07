@@ -146,11 +146,11 @@ public partial class HitErrorBar : GameplayHUDComponent
 
     private void updateAverage()
     {
-        var avg = JudgementProcessor.Results.Average(h => h.Difference);
-        var judgement = Screen.HitWindows.JudgementFor(avg);
-        avg /= Screen.Rate;
-
-        average.MoveToX((float)-avg, 100, Easing.OutQuint);
-        average.Colour = skinManager.SkinJson.GetColorForJudgement(judgement);
+        // var avg = JudgementProcessor.Results.Average(h => h.Difference);
+        // var judgement = Screen.HitWindows.JudgementFor(avg);
+        // avg /= Screen.Rate;
+        //
+        // average.MoveToX((float)-avg, 100, Easing.OutQuint);
+        // average.Colour = skinManager.SkinJson.GetColorForJudgement(judgement);
     }
 }

@@ -50,7 +50,7 @@ public partial class HitObjectManager : Container<DrawableHitObject>
     public MapInfo Map => playfield.Map;
     public int KeyCount => playfield.RealmMap.KeyCount;
     public Stack<HitObject> PastHitObjects { get; } = new();
-    public List<HitObject> FutureHitObjects { get; } = new();
+    public Queue<HitObject> FutureHitObjects { get; } = new();
     public List<DrawableHitObject> HitObjects { get; } = new();
 
     public double CurrentTime { get; private set; }
@@ -84,7 +84,7 @@ public partial class HitObjectManager : Container<DrawableHitObject>
             if (HitObjects.Count > 0)
                 return HitObjects[0].Data;
 
-            return FutureHitObjects.Count > 0 ? FutureHitObjects[0] : null;
+            return FutureHitObjects.Count > 0 ? FutureHitObjects.Peek() : null;
         }
     }
 
@@ -124,13 +124,13 @@ public partial class HitObjectManager : Container<DrawableHitObject>
 
         Finished = HitObjects.Count == 0 && FutureHitObjects.Count == 0;
 
-        while (FutureHitObjects is { Count: > 0 } && (ShouldDisplay(FutureHitObjects[0].Time) || HitObjects.Count < minimum_loaded_hit_objects))
+        while (FutureHitObjects is { Count: > 0 } && (ShouldDisplay(FutureHitObjects.Peek().Time) || HitObjects.Count < minimum_loaded_hit_objects))
         {
-            var hit = createHitObject(FutureHitObjects[0]);
+            var hit = createHitObject(FutureHitObjects.Peek());
             HitObjects.Add(hit);
             AddInternal(hit);
 
-            FutureHitObjects.RemoveAt(0);
+            FutureHitObjects.Dequeue();
         }
 
         while (HitObjects.Count > 0 && !ShouldDisplay(HitObjects.Last().Data.Time) && HitObjects.Count > minimum_loaded_hit_objects)
@@ -257,7 +257,7 @@ public partial class HitObjectManager : Container<DrawableHitObject>
         HitObjects.Remove(hitObject);
 
         if (addToFuture)
-            FutureHitObjects.Insert(0, hitObject.Data);
+            FutureHitObjects.Enqueue(hitObject.Data);
         else
             PastHitObjects.Push(hitObject.Data);
 
@@ -345,7 +345,7 @@ public partial class HitObjectManager : Container<DrawableHitObject>
         initScrollVelocityMarks();
         initSnapIndices();
 
-        Map.HitObjects.ForEach(FutureHitObjects.Add);
+        Map.HitObjects.ForEach(hitObject => FutureHitObjects.Enqueue(hitObject));
     }
 
     private void initScrollVelocityMarks()
