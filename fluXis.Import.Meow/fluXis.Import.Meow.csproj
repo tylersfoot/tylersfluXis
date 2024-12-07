@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>11</LangVersion>
+    <RootNamespace>fluXis.Import.Meow</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup Label="Project References">
+    <ProjectReference Include="..\fluXis.Game\fluXis.Game.csproj" />
+  </ItemGroup>
+  
+</Project>
